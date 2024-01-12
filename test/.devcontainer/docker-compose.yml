@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  app:
+    image: mcr.microsoft.com/dotnet/sdk:7.0
+    volumes:
+      - ../..:/workspaces:cached
+    networks:
+      - default
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    healthcheck:
+      test: sudo apt update || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+
+  postgres:
+    image: postgres
+    restart: unless-stopped
+    volumes:
+      - data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    networks:
+      - default
+    depends_on:
+      - app 
+      
+  pgAdmin:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    networks:
+      - default
+    depends_on:
+      - app
+    volumes:
+      - data:/var/lib/pgadmin
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    volumes:
+      - data:/var/lib/rabbitmq
+    restart: unless-stopped
+    networks:
+      - default
+    depends_on:
+      - app
+
+volumes:
+  data:
+
+networks:
+  default:
