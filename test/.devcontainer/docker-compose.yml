@@ -2,9 +2,11 @@ version: '3.8'
 
 services:
   app:
-    image: mcr.microsoft.com/dotnet/sdk:7.0
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
-      - ../..:/workspaces:cached
+      - data:/workspaces:cached
     networks:
       - default
     restart: unless-stopped
